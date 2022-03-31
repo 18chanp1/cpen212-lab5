@@ -1,0 +1,12 @@
+Q1. What is reused in your modified code, and what is it reused across?
+
+
+
+Q2. Calculate the expected L1 data cache read miss rate for fc1 before and after your modifications. Explain in detail why you expect this miss rate; unsupported answers will receive no credit.
+
+
+
+Q3. Explain any differences between your expected and measured L1 data cache read miss rates.
+
+
+

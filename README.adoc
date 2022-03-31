@@ -1,0 +1,168 @@
+= Lab 5: $$$
+CPEN 212
+:experimental:
+:toc: macro
+:!toc-title:
+:toclevels: 1
+ifndef::env-github[:icons: font]
+ifdef::env-github[]
+:!toc-title:
+:caution-caption: :fire:
+:important-caption: :exclamation:
+:note-caption: :paperclip:
+:tip-caption: :bulb:
+:warning-caption: :warning:
+endif::[]
+
+
+In this lab, you will change some code we have given you to optimize the cache performance. The program is fairly realistic: it runs a convolutional neural network on the MNIST digit test dataset (model and weights from https://github.com/pytorch/serve/tree/master/examples/image_classifier/mnist[PyTorch]). To measure cache misses, you will use a tool that simulates a cache hierarchy and attributes misses to specific functions and source code lines.
+
+toc::[]
+
+
+== Advice
+
+Make sure you review the cache lectures, and that you understand how caches work and support reuse. You will be asked to modify code as well as to _explain_ what happens in the cache.
+
+
+== Logistics
+
+WARNING: As in the prior labs, we will use `ssh.ece.ubc.ca` to evaluate your submissions. We have tried to make the code work across different machines, but if your submission works on some machine you have but not on `ssh.ece.ubc.ca`, you will be out of luck.
+
+Note that, as with prior labs, Tasks 1 and 2 are due earlier than the rest.
+
+As in the other labs, all submissions are made by committing your code and pushing the commits to the assignment repo on GitHub.
+
+As with all work in CPEN212, all of your code modifications and text must be original work done by you.
+
+
+== Coding rules
+
+Rules you must obey when writing code:
+
+* When compiling your code, we will only compile `classifier.c` in the relevant directory using a fresh copy of the `Makefile`, the header file, and the static library. This means that all your code must be in `classifier.c`, and you may not modify any other files.
+
+* You may define whatever additional functions and variables you like, but you may not use any names that start with a double underscore (e.g., `__foo`).
+
+* Your code must be in C (specifically ISO C17).
+
+* Your code must not include a `main` function.
+
+* Your code must not require linking against any libraries other that the usual `libc` (which is linked against by default when compiling C).
+
+* Your code must compile without errors. If we can't even compile your code, you will receive no credit for that task.
+
+* Your code must be functionally correct, that is, it must compute the same results as the original code (possibly in different order). If your code is not functionally correct, you will receive no credit. The testing code provided to you will report failures if any inputs are incorrectly classified.
+
+If you violate these rules, we will likely not be able to compile and/or properly test your code.
+
+
+== Measuring cache performance
+
+To estimate cache performance, we will use a tool called cachegrind, part of the valgrind infrastructure. Valgrind works by decompiling the ELF executable to an intermediate representation, inserting some instrumentation, recompiling everything back to executable code, and running that. It's usually used to track down memory leaks in programs (and you should use it for that!), but for this lab we will use it only to simulate a cache hierarchy.
+
+Let's run cachegrind and examine the output. `cd` to the `task1` directory, and run `make run`. After a few minutes, you should see some output from the cache simulator, including something like the following: 
+----
+--------------------------------------------------------------------------------
+Ir            I1mr ILmr Dr            D1mr          DLmr          Dw            D1mw      DLmw       file:function
+--------------------------------------------------------------------------------
+6,733,154,622   19   19 2,167,672,309 2,135,406,214 6,384,952 1,065,391,534 3,686,405 460,801  /somepath/classifier.c:conv2
+  953,347,216    7    7   353,907,336   237,122,068   182,589   117,986,790    12,800   1,601  /somepath/classifier.c:fc1
+  141,751,902   19   19    41,960,901    41,413,886     9,728    23,214,140 2,163,204 270,400  /somepath/classifier.c:conv1
+   12,157,679    7    7     3,688,307     1,844,402   272,452       921,611   921,501 115,201  /somepath/classifier.c:maxpool
+----
+
+The counts represent the references to, and misses in, the instruction and data caches: `Ir` is the memory references to fetch instructions and `I1rm` the misses in the L1 instruction cache, while `Dr` and `D1mr` are the data references and L1 data cache misses. In this case, the `conv2` function experienced L1 data cache read miss rate of 2,135,406,214 / 2,167,672,309, or about 98.5%. 
+
+In this lab, we will be concerned only about the *data references* to the *L1 cache*, and only the *reads*. We will simulate a 4KB, 4-way-associative cache with 64-byte cache lines and the least-recently-used (LRU) replacement policy; you can see how this is selected in the `Makefile`.
+
+
+== Task 1: Reuse analysis
+
+In the cache lectures, we derived the reuse patterns from equations representing matrix multiplication. In this task, you will repeat this task on the code of `fc1` and `conv2` functions: you will need to determine what can be reused and what it is reused across.
+
+=== Deliverables
+
+* `task1/ANSWERS.txt` filled in with your analysis.
+
+=== Hints
+
+* The code uses 1D arrays to represent multidimensional tensors. It's much easier to do the analysis if you rewrite the computation in terms of multiple independent indices, as we did with the equation in lecture.
+* There are several more sources of reuse in Q2 compared to Q1.
+* It might help to draw out the various arrays that are being computed on to visualize the reuse.
+
+
+== Task 2: Spatial locality in FC1
+
+In `task2`, modify `fc1` in `classifier.c` to maximally exploit *spatial locality only*. Then 
+
+=== Deliverables
+
+* `task2/classifier.c` with your modifications.
+* `task2/ANSWERS.txt` with your analysis.
+
+=== Hints
+
+* Make sure you understand the relevant lecture content.
+* See `classifier.h` for the dimensions of various vectors. The `batch_sz` argument is the number of tests you're running.
+* You can get the code to run faster if you modify `NTESTS` in the `Makefile`, say to 10. However, we will autotest your code and calculate cache miss rates with 100 tests; before you submit, be sure to run with the default 100 tests.
+* Make sure your code does not introduce any test failures.
+
+
+== Task 3: Temporal locality in FC1
+
+In `task3`, modify `fc1` in `classifier.c` to maximally exploit *temporal locality*. The modifications should *include* your changes from task 2.
+
+=== Deliverables
+
+* `task3/classifier.c` with your modifications, cumulative with task 2.
+* `task3/ANSWERS.txt` with your analysis.
+
+
+== Task 4: Spatial locality in CONV2
+
+In `task4`, modify `conv2` in `classifier.c` to maximally exploit *spatial locality*. The modifications should *include* your changes from all previous tasks.
+
+=== Deliverables
+
+* `task4/classifier.c` with your modifications, cumulative with all previous tasks.
+* `task4/ANSWERS.txt` with your analysis.
+
+=== Hints
+
+* Make sure you know how large each dimension is.
+
+
+== Task 5: Temporal locality in CONV2
+
+In `task5`, modify `conv2` in `classifier.c` to maximally exploit *temporal locality*. The modifications should *include* your changes from all previous tasks.
+
+=== Deliverables
+
+* `task5/classifier.c` with your modifications, cumulative with all previous tasks.
+* `task5/ANSWERS.txt` with your analysis.
+
+=== Hints
+
+* There are already multiple dimensions here. Consider how you can take advantage of that.
+
+
+== Bonus: Full CNN optimization
+
+Optimize the full CNN pipeline, minimizing the *cumulative* L1 data cache misses from `conv1`, `conv2`, `maxpool`, `fc1`, and `fc2`. Document the reuse you are taking advantage of in `DESCRIPTION.txt`.
+
+
+=== Deliverables
+
+* `bonus/classifier.c` with your modifications.
+* `bonus/DOCS.txt` with your documentation.
+
+
+== Marks
+
+* Task 1: 2
+* Task 2: 2
+* Task 3: 2
+* Task 4: 2
+* Task 5: 2
+* Bonus: 1
