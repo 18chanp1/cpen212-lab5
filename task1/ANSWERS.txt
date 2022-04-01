@@ -1,12 +1,19 @@
-Q1. Consider the fc1 function. For each array that can be reused in the second loop, identify the array and which invariant indices it is reused against.
+Q1. Consider the fc1 function. For each array that can be 
+reused in the second loop, identify the array and which invariant
+indices it is reused against.
 
+wts can be reused, if k,c, is the invariant index.
+iacts can be reused, c,n are invariant indices,
+oacts can be reused, k, n are invariant indices. 
 
 
 Q2. Consider the conv2 function. For each array that can be reused in the second loop, identify the array and which invariant indices it is reused against.
-
+oacts can be reused if n, k, y, x are invariant indices
+wts can be reused if k, c, s, r are invariant indices
+iacts can be reused if n, c, y, s, x, r are invariant indices. 
 
 
 Q3. In conv2, there is a reuse due to the fact that the value of a + b can be equal to the value of c + d for some values of a, b, c, and d. Identify this reuse and explain the reuse pattern as above.
-
+iacts can be reused if when y+s is invariant or when x+r is invariant. 
 
 
