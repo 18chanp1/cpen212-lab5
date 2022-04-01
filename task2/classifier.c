@@ -100,15 +100,18 @@ void fc1(const double *wts, const double *bias, const double *iacts, double *oac
             oacts[(n * FC1_K) + k] = bias[k];
         }
     }
-    for (size_t c = 0; c < FC1_C; ++c) {
+
+    for (size_t n = 0; n < batch_sz; ++n) {
         for (size_t k = 0; k < FC1_K; ++k) {
-            for (size_t n = 0; n < batch_sz; ++n) {
+             for (size_t c = 0; c < FC1_C; ++c){
                 oacts[(n * FC1_K) + k] += wts[k * FC1_C + c] * iacts[(n * FC1_C) + c];
             }
         }
     }
-    for (size_t k = 0; k < FC1_K; ++k) {
-        for (size_t n = 0; n < batch_sz; ++n) {
+
+    
+    for (size_t n = 0; n < batch_sz; ++n) {
+        for (size_t k = 0; k < FC1_K; ++k) {
             if (oacts[(n * FC1_K) + k] < 0)
                 oacts[(n * FC1_K) + k] = 0;
         }
