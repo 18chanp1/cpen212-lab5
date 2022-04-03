@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "classifier.h"
+#include <stdio.h>
 
 inline double max4(double x1, double x2, double x3, double x4) {
     double x = (x2 > x1) ? x2 : x1;
@@ -95,6 +96,9 @@ void maxpool(double *iacts, double *oacts, size_t batch_sz) {
 }
 
 void fc1(const double *wts, const double *bias, const double *iacts, double *oacts, size_t batch_sz) {
+    printf("sz, %i\n", batch_sz);
+
+
     for (size_t k = 0; k < FC1_K; ++k) {
         for (size_t n = 0; n < batch_sz; ++n) {
             oacts[(n * FC1_K) + k] = bias[k];

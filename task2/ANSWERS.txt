@@ -1,12 +1,26 @@
 Q1. What is reused in your modified code, and what is it reused across?
-
+I reuse oacts as I increment c many times. 
+I reuse a row of iacts as k is incremented. 
 
 
 Q2. Calculate the expected L1 data cache read miss rate for fc1 before and after your modifications. Explain in detail why you expect this miss rate; unsupported answers will receive no credit.
+Before - 2/3. 
+oacts has 1/1 miss rate since n is incremented, so the next value is far away with no spatial reuse.
+wts has a 0 miss rate since each value is used at least n times, which means the miss rate is negligible.
+iacts has a 1/1 miss rate since when n is incremented, the next value is far away, so there is no spatial reuse. 
 
+(1 + 0 + 1 )/3 = 67%
 
+After
+oacts has a 0 miss rate since it is used c times, which is large. So we neglect it.
+wts has a 1/8 miss rate since the cache holds 8 values so for each fetch we get 8 values for free
+when we increment c.
+iacts has a 1/8 miss rate similar to above.
+
+(1/8 + 1/8 + 0) / 3 = 1/12
 
 Q3. Explain any differences between your expected and measured L1 data cache read miss rates.
 
-
+This is because the compiler further optimizes the code which leads to oacts
+getting evicted more often leading to a higher cache miss rate of 1/8.
 
