@@ -102,8 +102,8 @@ void fc1(const double *wts, const double *bias, const double *iacts, double *oac
     }
 
     for(size_t n0 = 0; n0 < batch_sz; n0 += 128){
-        for(size_t k0 = 0; k0 < FC1_K; k0 += 128){
-            for(size_t c0 = 0; c0 < FC1_C; c0 += 128){
+        for(size_t c0 = 0; c0 < FC1_C; c0 += 128){
+            for(size_t k0 = 0; k0 < FC1_K; k0 += 128){
                 for (size_t n = n0; n < n0 + 128 && n < batch_sz; ++n) {
                     for (size_t k = k0; k < k0 + 128 && k < FC1_K; ++k) {
                         for (size_t c = c0; c < c0 + 128 && c < FC1_C; ++c){

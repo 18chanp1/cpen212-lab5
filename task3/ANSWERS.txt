@@ -1,8 +1,23 @@
 Q1. What is reused in your modified code, and what is it reused across?
+In addition to the reuse in task 2:
+I reuse oacts as I increment c many times.
+I reuse a row of iacts as k is incremented.
 
+I also now reuse wts since c only increments until the cache is full
+and doesn't evict wts when more elements of wts are brought in. It can be reused
+even if n changes.
 
+Iacts is resued more since c only increments until the cache is full, and then it can stay to be reused
+even if k changes.
 
 Q2. Calculate the expected L1 data cache read miss rate in fc1 before and after your modifications. Explain in detail why you expect this miss rate; unsupported answers will receive no credit.
+
+After task 2: (1/8 + 1/8 + 0)/3 = 1/12
+
+After Task 3 modifications.
+oacts still has a 0 miss rate
+wts - initially 1/8 miss rate since each cache line has 8 elements, but with temporal reuse,
+      each element is also reused
 
 
 
