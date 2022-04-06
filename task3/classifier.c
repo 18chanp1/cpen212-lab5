@@ -107,7 +107,7 @@ void fc1(const double *wts, const double *bias, const double *iacts, double *oac
                 for (size_t n = n0; n < n0 + 128 && n < batch_sz; ++n) {
                     for (size_t k = k0; k < k0 + 128 && k < FC1_K; ++k) {
                         for (size_t c = c0; c < c0 + 128 && c < FC1_C; ++c){
-                            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                        oacts[(n * FC1_K) + k] += wts[k * FC1_C + c] * iacts[(n * FC1_C) + c];
+                          oacts[(n * FC1_K) + k] += wts[k * FC1_C + c] * iacts[(n * FC1_C) + c];
                         }   
                     }
                 }
