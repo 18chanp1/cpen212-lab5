@@ -61,7 +61,7 @@ void conv2(const double *wts, const double *bias, const double *iacts, double *o
         }
     }
 
-    for(i30y = 0; i30y < IN3_Y; i30y += 12){
+    for(int i30y = 0; i30y < IN3_Y; i30y += 12){
         for (size_t n = 0; n < batch_sz; ++n) {
             for (size_t k = 0; k < CONV2_K; ++k) {
                 for (size_t c = 0; c < CONV2_C; ++c) {

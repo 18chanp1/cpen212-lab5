@@ -1,6 +1,14 @@
 Q1. What is reused in your modified code, and what is it reused across?
 
+oacts is now reused when s, r, are incremented, while other variables
+do not change.
 
+wts is now reused even when x, y, do not change, depending
+on whether a line of size CONV2_S and CONV2_R fit in the cache.
+Since CONV2_S * CONV2_R = 9*9 = 81, there is some spatial reuse,
+though it might be evicted more often.
+
+iacts can be reused if
 
 Q2. Calculate the expected L1 data cache read miss rate in conv2 before and after your modifications. Explain in detail why you expect this miss rate; unsupported answers will receive no credit.
 
