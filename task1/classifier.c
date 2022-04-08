@@ -60,16 +60,20 @@ void conv2(const double *wts, const double *bias, const double *iacts, double *o
             }
         }
     }
-    /* LOOP TO ANALYZE BELOW */
-    for (size_t r = 0; r < CONV2_R; ++r) {
-        for (size_t s = 0; s < CONV2_S; ++s) {
-            for (size_t x = 0; x < IN3_X; ++x) {
+    for (size_t n = 0; n < batch_sz; ++n) {
+        for (size_t k = 0; k < CONV2_K; ++k) {
+            for (size_t c = 0; c < CONV2_C; ++c) {
                 for (size_t y = 0; y < IN3_Y; ++y) {
-                    for (size_t c = 0; c < CONV2_C; ++c) {
-                        for (size_t k = 0; k < CONV2_K; ++k) {
-                            for (size_t n = 0; n < batch_sz; ++n) {
-                                oacts[(n * CONV2_K * IN3_X * IN3_Y) + (k * IN3_X * IN3_Y) + (y * IN3_X) + x] +=
-                                    (wts[(k * CONV2_C * CONV2_S * CONV2_R) + (c * CONV2_S * CONV2_R) + (s * CONV2_R) + r] * iacts[(n * CONV2_C * IN2_X * IN2_Y) + (c * IN2_X * IN2_Y) + ((y + s) * IN2_X) + (x + r)]);
+                    for (size_t x = 0; x < IN3_X; ++x) {
+                        // size_t s = 0; 
+                        // size_t r = 0;
+                        for (size_t s = 0; s < CONV2_S; ++s) {
+                            for (size_t r = 0; r < CONV2_R; ++r) {
+//  register volatile pee = wts[(k * CONV2_C * CONV2_S * CONV2_R) + (c * CONV2_S * CONV2_R) + (s * CONV2_R) + r];
+ register volatile que = oacts[(n * CONV2_K * IN3_X * IN3_Y) + (k * IN3_X * IN3_Y) + (y * IN3_X) + x];
+//  register volatile arr = iacts[(n * CONV2_C * IN2_X * IN2_Y) + (c * IN2_X * IN2_Y) + ((y + s) * IN2_X) + (x + r)];
+                                // oacts[(n * CONV2_K * IN3_X * IN3_Y) + (k * IN3_X * IN3_Y) + (y * IN3_X) + x] +=
+                                //     (wts[(k * CONV2_C * CONV2_S * CONV2_R) + (c * CONV2_S * CONV2_R) + (s * CONV2_R) + r] * iacts[(n * CONV2_C * IN2_X * IN2_Y) + (c * IN2_X * IN2_Y) + ((y + s) * IN2_X) + (x + r)]);
                             }
                         }
                     }
@@ -101,11 +105,16 @@ void fc1(const double *wts, const double *bias, const double *iacts, double *oac
             oacts[(n * FC1_K) + k] = bias[k];
         }
     }
-    /* LOOP TO ANALYZE BELOW */
-    for (size_t c = 0; c < FC1_C; ++c) {
-        for (size_t k = 0; k < FC1_K; ++k) {
-            for (size_t n = 0; n < batch_sz; ++n) {
-                oacts[(n * FC1_K) + k] += wts[k * FC1_C + c] * iacts[(n * FC1_C) + c];
+    for(size_t n0 = 0; n0 < batch_sz; n0 += 128){
+        for(size_t c0 = 0; c0 < FC1_C; c0 += 128){
+            for(size_t k0 = 0; k0 < FC1_K; k0 += 128){
+                for (size_t n = n0; n < n0 + 128 && n < batch_sz; ++n) {
+                    for (size_t k = k0; k < k0 + 128 && k < FC1_K; ++k) {
+                        for (size_t c = c0; c < c0 + 128 && c < FC1_C; ++c){
+                            oacts[(n * FC1_K) + k] += wts[k * FC1_C + c] * iacts[(n * FC1_C) + c];
+                        }
+                    }
+                }
             }
         }
     }
