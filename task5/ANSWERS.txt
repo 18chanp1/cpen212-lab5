@@ -1,12 +1,43 @@
 Q1. What is reused in your modified code, and what is it reused across?
+In addition to changes in task 4, I can now also reuse oacts, since incrementing c,
+s, r leads to data accesses that can fit in the cache completely (3*3*4*4) = 128 elements * 8 bytes 
+= 1024 bytes, with 3 arrays, so 3072 bytes. That is theoretically, but I found that filling the cache halfway
+is more effective due to reduced collisisons, so I chose a tile size of 2 instead. 
 
+So, each time y increments, oacts is reused for values of x, s, and r.
+
+wts is reused additionally when k, c, s and r are unchanged, since it can fit in the cache. 
+
+iacts is reused additionally since x+r, and y+s is incremented less, so a tile is sized (12+3 * 12 + 3),
+can fit all 3 tiles into the cache simultaneously allowing for reuse when any of y1+s1 = y2+s2 and 
+similarly for x, r. It is possible for reuse when incrementing k, if the tiles were even smaller, but this
+is not done here. 
 
 
 Q2. Calculate the expected L1 data cache read miss rate in conv2 before and after your modifications. Explain in detail why you expect this miss rate; unsupported answers will receive no credit.
+The before modifications are explained in task 4, where the miss rate is
+(1/8 + 1/8 + 1/32)/3 = 3/32 = 9%
+
+After:
+wts: 
+1/32 now
+initially 1/8. but there is temporal use when x, y are being incremented, which is the tile size of 2*2=4, So
+the miss rate is 1/8 * 1/4 = 1/32.
+
+oacts: 
+Initially 1/8, since a tile of y and x can fit in the cache, it is reused CONV2_C times, so 1/8 * 1/32 = 1/256
+
+iacts :
+There is no improvement intended in iacts cache gets. It is the same as before. 
+
+Overall rate = (1/32 + 1/128 + 1/32)/3 = 3/128 = 2.3%
 
 
 
 Q3. Explain any differences between your expected and measured L1 data cache read miss rates.
+The rate is actually pretty close, since the measured rate is 2%. I think the main reason here, is
+perhaps the compiler is performing some other optimizations, since when I use "volatile" the rate is closer
 
+There isn't really much difference. 
 
 
